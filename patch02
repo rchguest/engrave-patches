@@ -1,0 +1,32 @@
+commit d86c0a244b135dc0905f55bf7a50b848beb2e84f
+Author: Your Name <you@example.com>
+Date:   Fri Sep 23 18:31:30 2022 -0700
+
+    engrave fix cxf cursive and change file open encoding from ascii to cp437
+
+diff --git a/engrave/cxf-fonts/cursive.cxf b/engrave/cxf-fonts/cursive.cxf
+index e30a6f5..7d1dc37 100644
+--- a/engrave/cxf-fonts/cursive.cxf
++++ b/engrave/cxf-fonts/cursive.cxf
+@@ -651,7 +651,7 @@ L 0.337402,1.25883,0.577881,2.15659
+ AR 1.543701,1.89777,1,165,90
+ L 1.543701,2.89777,4.776367,2.89777
+ 
+-[#2205] //diameter
++[#2205] 3 //diameter
+ L 1.986572,0.48296,6.342773,8.21037
+ A 4.164551,4.34666,2.89778,60.587872,240.58786
+ A 4.164551,4.34666,2.89778,240.58786,60.587872
+diff --git a/engrave/engrave.py b/engrave/engrave.py
+index 7fbc224..5ac7182 100644
+--- a/engrave/engrave.py
++++ b/engrave/engrave.py
+@@ -351,7 +351,7 @@ class Application(Frame):
+         # range check inputs for gross errors
+         try:
+             self.Font.configure( bg = self.NormalColor )
+-            file = open(fontPath+self.FontVar.get(), encoding='ascii')
++            file = open(fontPath+self.FontVar.get(), encoding='cp437')
+         except:
+             print(self.FontVar.get())
+             self.Font.configure( bg = 'red' )
