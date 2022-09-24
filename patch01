@@ -1,0 +1,94 @@
+commit e8ea3d21db7717d6834f499c4d951d720ae1439d
+Author: Your Name <you@example.com>
+Date:   Fri Sep 23 18:20:24 2022 -0700
+
+    engrave adapt to python3. fix cxf AR line.
+
+diff --git a/engrave/engrave.py b/engrave/engrave.py
+index 7c8c230..7fbc224 100644
+--- a/engrave/engrave.py
++++ b/engrave/engrave.py
+@@ -33,7 +33,7 @@
+ """
+ version = '11'
+ 
+-from Tkinter import *
++from tkinter import *
+ from math import *
+ import os
+ import re
+@@ -42,7 +42,7 @@ import glob
+ fontPath = os.path.dirname(os.path.realpath(__file__))+'/cxf-fonts/'
+ fontList = [os.path.basename(x) for x in glob.glob(fontPath + '*.cxf')]
+ 
+-IN_AXIS = os.environ.has_key("AXIS_PROGRESS_BAR")
++IN_AXIS = "AXIS_PROGRESS_BAR" in os.environ
+ 
+ #=======================================================================
+ # This routine parses the .cxf font file and builds a font dictionary of
+@@ -57,7 +57,8 @@ def parse(file):
+     key = None
+     num_cmds = 0
+     line_num = 0
+-    for text in file:
++    try:
++      for text in file:
+         #format for a typical letter (lowercase r):
+         ##comment, with a blank line after it
+         #
+@@ -73,7 +74,8 @@ def parse(file):
+             font[key].stroke_list = stroke_list
+             font[key].xmax = xmax
+             if (num_cmds != cmds_read):
+-                print "(warning: discrepancy in number of commands %s, line %s, %s != %s )" % (fontfile, line_num, num_cmds, cmds_read)
++                print("(warning: discrepancy in number of commands %s, line %s, %s != %s )" % (
++                    file, line_num, num_cmds, cmds_read))
+ 
+         new_cmd = re.match('^\[(.*)\]\s(\d+)', text)
+         if new_cmd: #new character
+@@ -91,7 +93,11 @@ def parse(file):
+             stroke_list += [Line(coords)]
+             xmax = max(xmax, coords[0], coords[2])
+ 
+-        arc_cmd = re.match('^A (.*)', text)
++        arc_cmd_ccw = re.match('^A (.*)', text)
++        arc_cmd_cw = re.match('^AR (.*)', text)
++        arc_cmd = None
++        if arc_cmd_ccw: arc_cmd = arc_cmd_ccw
++        if arc_cmd_cw: arc_cmd = arc_cmd_cw
+         if arc_cmd:
+             cmds_read += 1
+             coords = arc_cmd.group(1)
+@@ -116,6 +122,9 @@ def parse(file):
+                 ymax = max(ymax, coords[1], coords[3])
+                 xstart = xend
+                 ystart = yend
++    except:
++        print("error at line ", line_num)
++        raise
+     return font
+ 
+ 
+@@ -295,8 +304,8 @@ class Application(Frame):
+ 
+ #=======================================================================
+     def updateFont(self,value):
+-		self.FontVar.set(value)
+-		self.DoIt()
++    	self.FontVar.set(value)
++    	self.DoIt()
+ 
+ 
+ #=======================================================================
+@@ -342,9 +351,9 @@ class Application(Frame):
+         # range check inputs for gross errors
+         try:
+             self.Font.configure( bg = self.NormalColor )
+-            file = open(fontPath+self.FontVar.get())
++            file = open(fontPath+self.FontVar.get(), encoding='ascii')
+         except:
+-            print self.FontVar.get()
++            print(self.FontVar.get())
+             self.Font.configure( bg = 'red' )
+             return
+ 
